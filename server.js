@@ -2,18 +2,12 @@
  * Created by rodrigohenriques on 9/24/16.
  */
 
-// server.js
-
-// BASE SETUP
-// =============================================================================
-
-// call the packages we need
 var express    = require('express');        // call express
 var app        = express();                 // define our app using express
 var bodyParser = require('body-parser');
+var pg = require('pg');
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
+// configure app to use bodyParser() this will let us get the data from a POST
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
@@ -31,6 +25,19 @@ router.get('/', function(req, res) {
 });
 
 // more routes for our API will happen here
+
+router.get('/db', function (request, response) {
+    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
+        client.query('SELECT * FROM test_table', function(err, result) {
+            done();
+            if (err)
+            { console.error(err); response.send("Error " + err); }
+            else
+            { response.render('pages/db', {results: result.rows} ); }
+        });
+    });
+});
+
 
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
