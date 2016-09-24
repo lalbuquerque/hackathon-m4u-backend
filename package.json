@@ -15,5 +15,10 @@
   "bugs": {
     "url": "https://github.com/rodrigohenriques/lio-fidelidade-backend/issues"
   },
-  "homepage": "https://github.com/rodrigohenriques/lio-fidelidade-backend#readme"
+  "homepage": "https://github.com/rodrigohenriques/lio-fidelidade-backend#readme",
+  "dependencies": {
+    "express": "~4.0.0",
+    "mongoose": "~3.6.13",
+    "body-parser": "~1.0.1"
+  }
 }
