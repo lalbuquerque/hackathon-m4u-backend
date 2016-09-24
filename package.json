@@ -2,7 +2,7 @@
   "name": "lio-fidelidade",
   "version": "0.1.0",
   "description": "Backend do projeto",
-  "main": "index.js",
+  "main": "server.js",
   "scripts": {
     "test": "test"
   },
