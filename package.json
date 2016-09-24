@@ -1,0 +1,19 @@
+{
+  "name": "lio-fidelidade",
+  "version": "0.1.0",
+  "description": "Backend do projeto",
+  "main": "index.js",
+  "scripts": {
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+ssh://git@github.com/rodrigohenriques/lio-fidelidade-backend.git"
+  },
+  "author": "Rodrigo Henriques",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/rodrigohenriques/lio-fidelidade-backend/issues"
+  },
+  "homepage": "https://github.com/rodrigohenriques/lio-fidelidade-backend#readme"
+}
