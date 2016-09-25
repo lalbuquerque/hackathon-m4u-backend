@@ -2,56 +2,48 @@
  * Created by rodrigohenriques on 9/24/16.
  */
 
-var express    = require('express');        // call express
-var app        = express();                 // define our app using express
+var util = require('util');
+var path = require('path');
+var packageJson = require('./package.json');
 var bodyParser = require('body-parser');
-var pg = require('pg');
+var mongoose = require('mongoose');
+var express = require('express');
+var app = express();
 
-// configure app to use bodyParser() this will let us get the data from a POST
-app.use(bodyParser.urlencoded({ extended: true }));
+app.set('views', path.join(__dirname, 'views'));
+app.set('view engine', 'pug');
+
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
-var port = process.env.PORT || 8080;        // set our port
+var users = require('./routes/user');
+var middleware = require('./routes/middleware');
 
-// ROUTES FOR OUR API
-// =============================================================================
-var router = express.Router();              // get an instance of the express Router
-
-// middleware to use for all requests
-router.use(function(req, res, next) {
-    // do logging
-    console.log('Request: ' + req.toString());
-    console.log('Response: ' + res.toString());
-    next(); // make sure we go to the next routes and don't stop here
+app.use('/api', middleware);
+app.use('/api', users);
+app.use('/api', function (req, res) {
+    res.json({message: 'LIO Fidelidade - Versão ' + packageJson.version.toString()});
 });
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-router.get('/', function(req, res) {
-    var packageJson = require('./package.json');
-
-    res.json({ message: 'LIO Fidelidade - Versão ' + packageJson.version.toString() });
+app.use(function(req, res, next) {
+    var err = new Error('Not Found');
+    err.status = 404;
+    next(err);
 });
 
-// more routes for our API will happen here
-
-router.get('/db', function (request, response) {
-    pg.connect(process.env.DATABASE_URL, function(err, client, done) {
-        client.query('SELECT * FROM test_table', function(err, result) {
-            done();
-            if (err)
-            { console.error(err); response.send("Error " + err); }
-            else
-            { response.render('pages/db', {results: result.rows} ); }
-        });
+app.use(function(err, req, res, next) {
+    res.status(err.status || 500);
+    res.json({
+        message: err.message,
+        error: {}
     });
 });
 
+var mongoDbUri = process.env.MONGODB_URI || "mongodb://heroku_gwnd8m9d:1acaom7sska0s31bflk6id3gma@ds041586.mlab.com:41586/heroku_gwnd8m9d";
+var port = process.env.PORT || 8080;
 
-// REGISTER OUR ROUTES -------------------------------
-// all of our routes will be prefixed with /api
-app.use('/api', router);
+mongoose.connect(mongoDbUri);
 
-// START THE SERVER
-// =============================================================================
 app.listen(port);
+
 console.log('Magic happens on port ' + port);
