@@ -6,11 +6,11 @@ var Schema = mongoose.Schema;
 var uuid = require('node-uuid');
 
 var UserWalletSchema = new Schema({
-    _id: { type: Schema.Types.ObjectId, default: mongoose.Types.ObjectId() },
+    _id: Schema.Types.ObjectId,
     name: String,
     amount: Number,
-    externalId: { type: String, unique : true, required : true, dropDups: true },
-    owner: Schema.Types.ObjectId
+    externalId: String,
+    owner: String
 });
 
 module.exports = mongoose.model('UserWallet', UserWalletSchema);

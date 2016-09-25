@@ -6,7 +6,7 @@ var Schema = mongoose.Schema;
 var uuid = require('node-uuid');
 
 var UserSchema = new Schema({
-    _id: { type: Schema.Types.ObjectId, default: mongoose.Types.ObjectId() },
+    _id: Schema.Types.ObjectId,
     name: String,
     password: String,
     email: {type: String, unique: true},
