@@ -32,59 +32,79 @@ router.post('/checkout', function (req, res) {
             } else {
                 UserWallet.findOne({owner: user._id, name: fidelityChannel})
                     .exec(function (err, wallet) {
-                        var request = require('request');
+                        if (wallet) {
+                            if (wallet.amount > points) {
+                                var request = require('request');
 
-                        request({
-                            url: 'https://cielo-order-manager.m4u.com.br/api/v1/orders/' + orderId + '/transactions',
-                            method: 'POST',
-                            headers: {
-                                'Client-Id': clientId,
-                                'Merchant-Id': merchantId,
-                                'Access-token': accessToken,
-                                'Content-Type' :'application/json'
-                            },
-                            json: {
-                                "id": lioTransactionId,
-                                "externalId": transactionId,
-                                "description": fidelityChannel.toUpperCase() + " (" + points + " PONTOS)",
-                                "status": "CONFIRMED",
-                                "price": amount,
-                                "cieloCode": points,
-                                "authCode": points,
-                                "brand": fidelityChannel.toUpperCase(),
-                                "mask": wallet.externalId,
-                                "terminal": merchant,
-                                "paymentType": 1
-                            }
-                        }, function(error, response, body){
-                            if (error) {
-                                res.send(error);
-                            } else {
-                                if (response.statusCode >= 200 && response.statusCode < 300) {
-                                    var transaction = Transaction();
+                                request({
+                                    url: 'https://cielo-order-manager.m4u.com.br/api/v1/orders/' + orderId + '/transactions',
+                                    method: 'POST',
+                                    headers: {
+                                        'Client-Id': clientId,
+                                        'Merchant-Id': merchantId,
+                                        'Access-token': accessToken,
+                                        'Content-Type' :'application/json'
+                                    },
+                                    json: {
+                                        "id": lioTransactionId,
+                                        "externalId": transactionId,
+                                        "description": fidelityChannel.toUpperCase() + " (" + points + " PONTOS)",
+                                        "status": "CONFIRMED",
+                                        "price": amount,
+                                        "cieloCode": points,
+                                        "authCode": points,
+                                        "brand": fidelityChannel.toUpperCase(),
+                                        "mask": wallet.externalId,
+                                        "terminal": merchant,
+                                        "paymentType": 1
+                                    }
+                                }, function(error, response, body){
+                                    if (error) {
+                                        res.send(error);
+                                    } else {
+                                        if (response.statusCode >= 200 && response.statusCode < 300) {
+                                            var transaction = Transaction();
 
-                                    transaction._id = mongoose.Types.ObjectId();
-                                    transaction.points = points;
-                                    transaction.amount = amount;
-                                    transaction.merchant = merchant;
-                                    transaction.description = fidelityChannel.toString();
-                                    transaction.lio_transaction_id = lioTransactionId;
-                                    transaction.user_wallet = wallet.id.toString();
+                                            transaction._id = mongoose.Types.ObjectId();
+                                            transaction.points = points;
+                                            transaction.amount = amount;
+                                            transaction.merchant = merchant;
+                                            transaction.description = fidelityChannel.toString();
+                                            transaction.lio_transaction_id = lioTransactionId;
+                                            transaction.user_wallet = wallet.id.toString();
 
-                                    transaction.save(function (err) {
-                                        if (err) {
-                                            res.send(err);
+                                            transaction.save(function (err) {
+                                                if (err) {
+                                                    res.send(err);
+                                                } else {
+                                                    wallet.amount = wallet.amount - points;
+                                                    wallet.save(function(err, w) {
+                                                        if (err) {
+                                                            console.log(err)
+                                                        } else {
+                                                            console.log(w);
+                                                        }
+                                                    });
+
+                                                    res.statusCode = 201;
+                                                    res.json(transaction);
+                                                }
+                                            });
                                         } else {
-                                            res.statusCode = 201;
-                                            res.json(transaction);
+                                            res.statusCode = 500;
+                                            res.json({message: "Can't create transaction"});
                                         }
-                                    });
-                                } else {
-                                    res.statusCode = 500;
-                                    res.json({message: "Can't create transaction"});
-                                }
+                                    }
+                                });
                             }
-                        });
+                            else {
+                                res.statusCode = 400;
+                                res.json({message: "Insuficient points. Expected: " + points + ", Balance: " + wallet.amount});
+                            }
+                        } else {
+                            res.statusCode = 400;
+                            res.json({message: "This client has no " + fidelityChannel + " account registered"});
+                        }
                     });
             }
         });
