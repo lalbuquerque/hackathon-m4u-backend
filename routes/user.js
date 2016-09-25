@@ -31,7 +31,7 @@ router.get('/user/:id', function (req, res) {
 router.post('/user', function (req, res) {
     var user = new User();
 
-    user._id = mongoose.Types.ObjectId()
+    user._id = mongoose.Types.ObjectId();
     user.name = req.body.name;
     user.email = req.body.email;
     user.phone = req.body.phone;
