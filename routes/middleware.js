@@ -7,8 +7,6 @@ var router = express.Router();
 
 router.use(function(req, res, next) {
     console.log(req.method.toString() + ' -> ' + req.path);
-    console.log('Headers:\n' + util.inspect(req.headers));
-    console.log('Body:\n' + util.inspect(req.body));
     next();
 });
 

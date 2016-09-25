@@ -5,13 +5,31 @@ var express = require('express');
 var router = express.Router();
 var mongoose = require('mongoose');
 
-var path = '/user';
-
-router.get(path, function (req, res, next) {
-    res.send('Here we will list all users');
+router.get('/user', function (req, res) {
+    User.find().exec(function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.statusCode = 200;
+            res.json(result);
+        }
+    });
 });
 
-router.post(path, function (req, res) {
+router.get('/user/:id', function (req, res) {
+    var id = req.params.id;
+
+    User.findOne({_id: id}).exec(function (err, result) {
+        if (err) {
+            res.send(err);
+        } else {
+            res.statusCode = 200;
+            res.json(result);
+        }
+    });
+});
+
+router.post('/user', function (req, res) {
     var user = new User();
 
     user.name = req.body.name;
@@ -20,40 +38,65 @@ router.post(path, function (req, res) {
     user.password = req.body.password;
     user.cpf = req.body.cpf;
 
-    user.save(function(err) {
+    user.save(function (err, u) {
         if (err) {
             res.send(err);
+        } else {
+            res.statusCode = 201;
+            res.json(u);
         }
     });
+});
 
-    console.log(user);
+router.get('/user/:id/wallet', function (req, res) {
+    var id = req.params.id;
 
-    var userWallets = req.body.wallets.map(function (w) {
-        var userWallet = UserWallet();
-
-        userWallet.name = w.name;
-        userWallet.amount = w.amount;
-        userWallet.externalId = w.externalId;
-
-        return userWallet;
-    });
-
-    console.log(userWallets);
-
-    userWallets.forEach(function (w) {
-        w.owner = user._objectId;
-
-        w.save(function(err) {
+    User.where({_id: id})
+        .exec(function (err, user) {
             if (err) {
-                res.send(err);
+                res.statusCode = 404;
+                res.json({message: "User not found"});
+            } else {
+                UserWallet.where({owner: id})
+                    .exec(function (err, result) {
+                        if (err) {
+                            res.send(err);
+                        } else {
+                            res.statusCode = 200;
+                            res.json(result);
+                        }
+                    });
             }
         });
+});
 
-        user.wallets.push(w._objectId);
-    });
 
-    res.statusCode = 201;
-    res.json(user);
+router.post('/user/:id/wallet', function (req, res) {
+    var id = req.params.id;
+
+    User.where({_id: id})
+        .exec(function (err, user) {
+            if (err) {
+                res.statusCode = 404;
+                res.json({message: "User not found"});
+            } else {
+                var userWallet = UserWallet();
+
+                userWallet.name = w.name;
+                userWallet.amount = w.amount;
+                userWallet.externalId = w.externalId;
+                userWallet.owner = id;
+
+                userWallet.save(function (err) {
+                    if (err) {
+                        res.send(err);
+                    } else {
+                        res.statusCode = 201;
+                        res.json(userWallet);
+                    }
+                });
+            }
+        });
 });
 
 module.exports = router;

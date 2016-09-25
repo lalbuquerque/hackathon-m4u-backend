@@ -6,14 +6,12 @@ var Schema = mongoose.Schema;
 var uuid = require('node-uuid');
 
 var UserSchema = new Schema({
-    _objectId: Schema.Types.ObjectId,
-    _id: {type: String, unique: true, required: true, dropDups: true, default: uuid.v1},
+    _id: { type: Schema.Types.ObjectId, default: mongoose.Types.ObjectId() },
     name: String,
     password: String,
-    email: {type: String, unique: true, required: true, dropDups: true},
-    phone: {type: String, unique: true, required: true, dropDups: true},
-    cpf: {type: String, unique: true, required: true, dropDups: true},
-    wallets: [{type: Schema.Types.ObjectId, ref: 'UserWallet'}]
+    email: {type: String, unique: true},
+    phone: {type: String, unique: true},
+    cpf: {type: String, unique: true}
 });
 
 module.exports = mongoose.model('User', UserSchema);
