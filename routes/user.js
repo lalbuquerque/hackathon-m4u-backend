@@ -3,6 +3,7 @@ var User = require('../models/user');
 var UserWallet = require('../models/user_wallet');
 var express = require('express');
 var router = express.Router();
+var mongoose = require('mongoose');
 
 var path = '/user';
 
@@ -22,36 +23,37 @@ router.post(path, function (req, res) {
     user.save(function(err) {
         if (err) {
             res.send(err);
-            return;
         }
-
-        console.log(user);
-
-        var userWallets = req.body.wallets.map(function (w) {
-            var userWallet = UserWallet();
-
-            userWallet.name = w.name;
-            userWallet.amount = w.amount;
-            userWallet.externalId = w.externalId;
-
-            return userWallet;
-        });
-
-        userWallets.forEach(function (w) {
-            w.owner = user._objectId;
-            w.save(function(err) {
-                if (err) {
-                    res.send(err);
-                    return;
-                }
-
-                user.wallets.push(w._objectId);
-            })
-        });
-
-        res.statusCode = 201;
-        res.json(user);
     });
+
+    console.log(user);
+
+    var userWallets = req.body.wallets.map(function (w) {
+        var userWallet = UserWallet();
+
+        userWallet.name = w.name;
+        userWallet.amount = w.amount;
+        userWallet.externalId = w.externalId;
+
+        return userWallet;
+    });
+
+    console.log(userWallets);
+
+    userWallets.forEach(function (w) {
+        w.owner = user._objectId;
+
+        w.save(function(err) {
+            if (err) {
+                res.send(err);
+            }
+        });
+
+        user.wallets.push(w._objectId);
+    });
+
+    res.statusCode = 201;
+    res.json(user);
 });
 
 module.exports = router;
