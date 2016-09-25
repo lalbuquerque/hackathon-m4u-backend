@@ -15,11 +15,13 @@ app.set('view engine', 'pug');
 app.use(bodyParser.urlencoded({extended: true}));
 app.use(bodyParser.json());
 
+var checkout = require('./routes/checkout');
 var user = require('./routes/user');
 var user_wallet = require('./routes/user_wallet');
 var middleware = require('./routes/middleware');
 
 app.use('/api', middleware);
+app.use('/api', checkout);
 app.use('/api', user);
 app.use('/api', user_wallet);
 app.use('/api', function (req, res) {
